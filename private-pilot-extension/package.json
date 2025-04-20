@@ -1,0 +1,141 @@
+{
+  "name": "private-pilot",
+  "displayName": "Private Pilot",
+  "description": "Automated code development assistant",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/faridani/PrivatePilot.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/faridani/PrivatePilot/issues"
+  },
+  "homepage": "https://github.com/faridani/PrivatePilot",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:private-pilot.improve",
+    "onCommand:private-pilot.explain",
+    "onCommand:private-pilot.fixTypos",
+    "onCommand:private-pilot.writeComments",
+    "onCommand:private-pilot.automatedReview",
+    "onCommand:private-pilot.autoComment",
+    "onCommand:private-pilot.createCode",
+    "onCommand:private-pilot.askQuestion"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "private-pilot.improve",
+        "title": "Private Pilot: Improve"
+      },
+      {
+        "command": "private-pilot.explain",
+        "title": "Private Pilot: Explain this code"
+      },
+      {
+        "command": "private-pilot.fixTypos",
+        "title": "Private Pilot: Fix typos and grammar"
+      },
+      {
+        "command": "private-pilot.writeComments",
+        "title": "Private Pilot: Write Comments"
+      },
+      {
+        "command": "private-pilot.automatedReview",
+        "title": "Private Pilot: Automated Review"
+      },
+      {
+        "command": "private-pilot.autoComment",
+        "title": "Private Pilot: Auto Comment"
+      },
+      {
+        "command": "private-pilot.createCode",
+        "title": "Private Pilot: Create Code"
+      },
+      {
+        "command": "private-pilot.askQuestion",
+        "title": "Private Pilot: Ask a question"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "private-pilot.menu",
+          "group": "navigation"
+        }
+      ],
+      "private-pilot.menu": [
+        {
+          "command": "private-pilot.improve",
+          "group": "1_code_actions@1",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.explain",
+          "group": "1_code_actions@2",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.fixTypos",
+          "group": "1_code_actions@3",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.writeComments",
+          "group": "1_code_actions@4",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.automatedReview",
+          "group": "1_code_actions@5",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.autoComment",
+          "group": "2_empty_actions@1",
+          "when": "!editorHasSelection"
+        },
+        {
+          "command": "private-pilot.createCode",
+          "group": "2_empty_actions@2",
+          "when": "!editorHasSelection"
+        },
+        {
+          "command": "private-pilot.askQuestion",
+          "group": "2_empty_actions@3",
+          "when": "!editorHasSelection"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "private-pilot.menu",
+        "label": "Private Pilot"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.60.0",
+    "@types/glob": "^7.1.3",
+    "@types/node": "^14.17.0",
+    "eslint": "^7.27.0",
+    "glob": "^7.1.7",
+    "typescript": "^4.3.2",
+    "vscode-test": "^1.5.2"
+  }
+}
