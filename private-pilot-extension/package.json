@@ -2,6 +2,8 @@
   "name": "private-pilot",
   "displayName": "Private Pilot",
   "description": "Automated code development assistant",
+  "icon": "resources/icon.png",
+  "publisher": "PrivatePilotTeam",
   "version": "0.1.0",
   "repository": {
     "type": "git",
@@ -32,8 +34,16 @@
   "contributes": {
     "commands": [
       {
+        "command": "pivate-pilot.improve",
+        "title": "Private Pilot: Improve"      },
+      {
         "command": "private-pilot.improve",
-        "title": "Private Pilot: Improve"
+        "title": "Private Pilot: Improve this code"
+      },
+      {
+        "command": "$(comment-discussion) private-pilot.explain",
+        "title": "Private Pilot: Explain",
+        "icon": "$(comment-discussion)"
       },
       {
         "command": "private-pilot.explain",
@@ -75,6 +85,7 @@
         {
           "command": "private-pilot.improve",
           "group": "1_code_actions@1",
+          
           "when": "editorHasSelection"
         },
         {
