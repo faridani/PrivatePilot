@@ -1,5 +1,6 @@
 // src/extension.ts
 import * as vscode from 'vscode';
+const DELAY = 2; // Delay in milliseconds for typing effect
 
 /**
  * This method is called when the extension is activated
@@ -68,14 +69,48 @@ function getCursorPosition(): vscode.Position | null {
  * Handler for the "Improve" command
  */
 async function handleImproveCode() {
-  const selectedText = getSelectedText();
-  if (!selectedText) {
-    vscode.window.showInformationMessage('No code selected to improve.');
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showInformationMessage('No active editor found.');
     return;
   }
 
+  const selection = editor.selection;
+  if (selection.isEmpty) {
+    vscode.window.showInformationMessage('No code selected to improve.');
+    return;
+  }
+  const selectedText = editor.document.getText(selection);
+
   // This would call the LLM backend in a real implementation
-  vscode.window.showInformationMessage('Improve code functionality triggered');
+  vscode.window.showInformationMessage('Improve code functionality triggered'+`:\n${selectedText}`);
+
+
+
+  
+  // Simulate deleting and then typing 
+  const textToType = selectedText + '\n\n\n//Hello world';
+
+  // Delete the selected text
+  await editor.edit(editBuilder => {
+    editBuilder.delete(selection);
+  });
+
+  // Type out the new text character by character at the selection start
+  let insertPos = selection.start;
+  for (let i = 0; i < textToType.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, DELAY)); // Delay for typing effect
+    await editor.edit(editBuilder => {
+      editBuilder.insert(insertPos, textToType[i]);
+    });
+    // Move the insert position forward by one character
+    insertPos = insertPos.translate(0, 1);
+  }
+
+  vscode.window.showInformationMessage('Selected text replaced with "Hello world".');
+
+
+
 }
 
 /**

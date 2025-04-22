@@ -35,15 +35,15 @@
     "commands": [
       {
         "command": "pivate-pilot.improve",
-        "title": "Private Pilot: Improve"      },
+        "title": "Private Pilot: Improve"      
+      },
       {
         "command": "private-pilot.improve",
         "title": "Private Pilot: Improve this code"
       },
       {
-        "command": "$(comment-discussion) private-pilot.explain",
-        "title": "Private Pilot: Explain",
-        "icon": "$(comment-discussion)"
+        "command": "private-pilot.explain",
+        "title": "Private Pilot: Explain"
       },
       {
         "command": "private-pilot.explain",
