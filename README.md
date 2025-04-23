@@ -1,6 +1,12 @@
 # PrivatePilot
 IDE extension for private coding 
 
+**Private Pilot** is a powerful VSCode extension designed to enhance developer productivity by integrating AI-driven assistance directly within the Visual Studio Code IDE. Leveraging the Ollama AI backend, Private Pilot provides real-time code suggestions, automated bug fixes, intelligent code commenting, and an interactive chat interface to streamline your coding workflow.
+
+
+<img src="media/privatepilot2.png" alt="Private Pilot Logo" width="200" height="200" />
+
+
 
 # Compile and Install 
 
@@ -38,4 +44,3 @@ From command line: code --install-extension private-pilot-0.1.0.vsix
 
 you'll have a .vsix file that you can install in VSCode using the methods I described earlier:
 
-This is a test 
