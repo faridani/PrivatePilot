@@ -15,20 +15,10 @@
   },
   "homepage": "https://github.com/faridani/PrivatePilot",
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Other"
-  ],
-  "activationEvents": [
-    "onCommand:private-pilot.improve",
-    "onCommand:private-pilot.explain",
-    "onCommand:private-pilot.fixTypos",
-    "onCommand:private-pilot.writeComments",
-    "onCommand:private-pilot.automatedReview",
-    "onCommand:private-pilot.autoComment",
-    "onCommand:private-pilot.createCode",
-    "onCommand:private-pilot.askQuestion"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -72,6 +62,10 @@
       {
         "command": "private-pilot.askQuestion",
         "title": "Private Pilot: Ask a question"
+      },
+      {
+        "command": "private-pilot.rewriteCode",
+        "title": ">>>Private Pilot: rewrite with Ollama"
       }
     ],
     "menus": {
@@ -109,6 +103,26 @@
           "when": "editorHasSelection"
         },
         {
+          "command": "private-pilot.rewriteCode",
+          "group": "1_code_actions@6",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.autoComment",
+          "group": "1_code_actions@7",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.createCode",
+          "group": "1_code_actions@8",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.askQuestion",
+          "group": "1_code_actions@9",
+          "when": "editorHasSelection"
+        },
+        {
           "command": "private-pilot.autoComment",
           "group": "2_empty_actions@1",
           "when": "!editorHasSelection"
@@ -130,8 +144,26 @@
         "id": "private-pilot.menu",
         "label": "Private Pilot"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Code Rewriter",
+      "properties": {
+        "codeRewriter.ollamaEndpoint": {
+          "type": "string",
+          "default": "http://localhost:11434/api/generate",
+          "description": "Endpoint for Ollama API"
+        },
+        "codeRewriter.ollamaModel": {
+          "type": "string",
+          "default": "llama2",
+          "description": "Ollama model to use for code improvement"
+        }
+      }
+    }
   },
+
+
+
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -141,12 +173,21 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^16.18.34",
     "@types/vscode": "^1.60.0",
-    "@types/glob": "^7.1.3",
-    "@types/node": "^14.17.0",
-    "eslint": "^7.27.0",
-    "glob": "^7.1.7",
-    "typescript": "^4.3.2",
-    "vscode-test": "^1.5.2"
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "ts-loader": "^9.4.3",
+    "typescript": "^5.1.3",
+    "webpack": "^5.85.0",
+    "webpack-cli": "^5.1.1"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
   }
 }

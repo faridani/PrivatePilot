@@ -1,5 +1,7 @@
 // src/extension.ts
 import * as vscode from 'vscode';
+import axios from 'axios';
+
 const DELAY = 2; // Delay in milliseconds for typing effect
 
 /**
@@ -7,7 +9,9 @@ const DELAY = 2; // Delay in milliseconds for typing effect
  * @param context - The extension context provided by VSCode
  */
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Congratulations, your extension "private-pilot" is now active!');
+  console.log('Congratulations, your extension "private-pilot" is now active and it will only show one window !');
+  console.log('Code Rewriter extension is now active');
+  vscode.window.showInformationMessage('Code Rewriter extension is now active!');
 
   // Register commands for code selection actions
   const improveCodeCommand = vscode.commands.registerCommand('private-pilot.improve', handleImproveCode);
@@ -21,6 +25,10 @@ export function activate(context: vscode.ExtensionContext) {
   const createCodeCommand = vscode.commands.registerCommand('private-pilot.createCode', handleCreateCode);
   const askQuestionCommand = vscode.commands.registerCommand('private-pilot.askQuestion', handleAskQuestion);
 
+  // Ollama API endpoint and model configuration
+  const rewriteCodeCommand = vscode.commands.registerCommand('private-pilot.rewriteCode', handleOllamaRequest);
+
+
   // Add all commands to the extension context
   context.subscriptions.push(
     improveCodeCommand,
@@ -30,7 +38,8 @@ export function activate(context: vscode.ExtensionContext) {
     automatedReviewCommand,
     autoCommentCommand,
     createCodeCommand,
-    askQuestionCommand
+    askQuestionCommand,
+    rewriteCodeCommand
   );
 }
 
@@ -219,5 +228,111 @@ async function handleAskQuestion() {
   });
 }
 
+async function handleOllamaRequest() {
+  vscode.window.showInformationMessage('Ollama request triggered');
+  console.log('Ollama request triggered');
+  try {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('No active editor found');
+      return;
+    }
+
+    const selection = editor.selection;
+    if (selection.isEmpty) {
+      vscode.window.showErrorMessage('No code selected');
+      return;
+    }
+
+    const selectedText = editor.document.getText(selection);
+    if (!selectedText) {
+      vscode.window.showErrorMessage('Selected text is empty');
+      return;
+    }
+
+    // Show progress notification
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Rewriting code...',
+        cancellable: false
+      },
+      async (progress) => {
+        progress.report({ increment: 0 });
+
+        try {
+          const config = vscode.workspace.getConfiguration('codeRewriter');
+          const ollamaEndpoint = config.get<string>('ollamaEndpoint') || 'http://localhost:11434/api/generate';
+          const ollamaModel = config.get<string>('ollamaModel') || 'llama2';
+
+          const response = await axios.post(
+            ollamaEndpoint,
+            {
+              model: ollamaModel,
+              prompt: `Improve this code:\n\n${selectedText}\n\nImproved code:`,
+              stream: false
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+
+          progress.report({ increment: 100 });
+
+          // Extract the improved code from the response
+          if (response.data && response.data.response) {
+            const improvedCode = extractCodeFromResponse(response.data.response);
+            console.log('Selected text:', selectedText);
+            console.log('Improved code:', improvedCode);
+
+            // Replace the selected text with the improved code
+            await editor.edit(editBuilder => {
+              editBuilder.replace(selection, improvedCode);
+            });
+            
+            vscode.window.showInformationMessage('Code successfully rewritten');
+          } else {
+            vscode.window.showErrorMessage('Invalid response from Ollama');
+          }
+        } catch (error) {
+          let errorMessage = 'Failed to rewrite code';
+          
+          if (axios.isAxiosError(error)) {
+            if (error.response) {
+              errorMessage = `Ollama API error: ${error.response.status} ${error.response.statusText}`;
+            } else if (error.request) {
+              errorMessage = 'Could not connect to Ollama. Make sure Ollama is running.';
+            }
+          }
+          
+          vscode.window.showErrorMessage(errorMessage);
+          console.error('Code rewriting error:', error);
+        }
+      }
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(`Unexpected error: ${error}`);
+    console.error('Unexpected error:', error);
+  }
+}
+
+
+function extractCodeFromResponse(response: string): string {
+  // Handle potential code block formatting in the response
+  // Some models might return code wrapped in markdown code blocks
+  const codeBlockMatch = response.match(/```(?:\w+)?\n([\s\S]+?)\n```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+  
+  // If no code block found, use the whole response
+  // This might need additional processing depending on your model's output format
+  return response.trim();
+}
+
 // This method is called when your extension is deactivated
 export function deactivate() {}
+
+

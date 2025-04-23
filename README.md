@@ -2,11 +2,17 @@
 IDE extension for private coding 
 
 
-# Install 
+# Compile and Install 
 
 ```bash
-npm install && npm run compile && vsce package
+npm install 
+npm run compile 
+vsce package
 ```
+
+Then on your VScode, first select `extension.ts` and then click on `Run -> Start Debugging [F5]` 
+
+
 or 
 
 ```bash
@@ -32,3 +38,4 @@ From command line: code --install-extension private-pilot-0.1.0.vsix
 
 you'll have a .vsix file that you can install in VSCode using the methods I described earlier:
 
+This is a test 
