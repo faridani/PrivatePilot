@@ -15,10 +15,11 @@ npm install
 npm run compile 
 vsce package
 ```
+On Windows machines you can simply run `build.bat` and on Mac/Linux you can just put the above commands in a shell file 
 
 Then on your VScode, first select `extension.ts` and then click on `Run -> Start Debugging [F5]` 
 
-
+On windows machine
 or 
 
 ```bash

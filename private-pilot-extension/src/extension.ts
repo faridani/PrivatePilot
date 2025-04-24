@@ -230,7 +230,7 @@ async function handleAskQuestion() {
 
 async function handleOllamaRequest() {
   vscode.window.showInformationMessage('Ollama request triggered');
-  console.log('Ollama request triggered');
+  console.log('Ollama request triggered...');
   try {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {

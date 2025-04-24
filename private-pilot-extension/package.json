@@ -25,7 +25,7 @@
     "commands": [
       {
         "command": "pivate-pilot.improve",
-        "title": "Private Pilot: Improve"      
+        "title": ">> Private Pilot: Improve"      
       },
       {
         "command": "private-pilot.improve",
