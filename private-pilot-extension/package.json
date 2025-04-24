@@ -24,12 +24,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "pivate-pilot.improve",
-        "title": ">> Private Pilot: Improve"      
-      },
-      {
         "command": "private-pilot.improve",
-        "title": "Private Pilot: Improve this code"
+        "title": ">>>Private Pilot: Improve this code"
       },
       {
         "command": "private-pilot.explain",
@@ -79,7 +75,6 @@
         {
           "command": "private-pilot.improve",
           "group": "1_code_actions@1",
-          
           "when": "editorHasSelection"
         },
         {
