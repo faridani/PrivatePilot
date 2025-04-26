@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
 
-const DELAY = 2; // Delay in milliseconds for typing effect
+const DELAY = 5; // Delay in milliseconds for typing effect
 
 /**
  * This method is called when the extension is activated
@@ -98,7 +98,7 @@ async function handleImproveCode() {
 
   
   // Simulate deleting and then typing 
-  const textToType = selectedText + '\n\n\n//Hello world';
+  const textToType = selectedText + '\n\n\n # # Hello world';
 
   // Delete the selected text
   await editor.edit(editBuilder => {
@@ -112,10 +112,16 @@ async function handleImproveCode() {
     await editor.edit(editBuilder => {
       editBuilder.insert(insertPos, textToType[i]);
     });
-    // Move the insert position forward by one character
-    insertPos = insertPos.translate(0, 1);
+    
+    // Handle position differently for newline characters
+    if (textToType[i] === '\n') {
+      // Move to beginning of next line
+      insertPos = new vscode.Position(insertPos.line + 1, 0);
+    } else {
+      // Move right by one character on same line
+      insertPos = insertPos.translate(0, 1);
+    }
   }
-
   vscode.window.showInformationMessage('Selected text replaced with "Hello world".');
 
 
@@ -228,7 +234,7 @@ async function handleAskQuestion() {
   });
 }
 
-async function handleOllamaRequest() {
+async function handleOllamaRequest(prompt: string) {
   vscode.window.showInformationMessage('Ollama request triggered');
   console.log('Ollama request triggered...');
   try {
@@ -269,7 +275,7 @@ async function handleOllamaRequest() {
             ollamaEndpoint,
             {
               model: ollamaModel,
-              prompt: `Improve this code:\n\n${selectedText}\n\nImproved code:`,
+              prompt: prompt || `Improve this code:\n\n${selectedText}\n\nImproved code:`,
               stream: false
             },
             {
