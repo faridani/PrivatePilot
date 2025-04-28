@@ -1,6 +1,7 @@
 // src/extension.ts
 import * as vscode from 'vscode';
 import axios from 'axios';
+import { improveCode } from './prompts';
 
 const DELAY = 5; // Delay in milliseconds for typing effect
 
@@ -96,9 +97,9 @@ async function handleImproveCode() {
 
 
 
-  
+  const preprompt = improveCode + selectedText;
   // Simulate deleting and then typing 
-  const textToType = selectedText + '\n\n\n # # Hello world';
+  const textToType = await getOllamaText(preprompt);
 
   // Delete the selected text
   await editor.edit(editBuilder => {
@@ -234,6 +235,60 @@ async function handleAskQuestion() {
   });
 }
 
+async function getOllamaText(prompt:string) {
+  vscode.window.showInformationMessage('Ollama request triggered');
+  console.log('getOllamaText request triggered...');
+  
+  try {
+    const config = vscode.workspace.getConfiguration('codeRewriter');
+    const ollamaEndpoint = config.get<string>('ollamaEndpoint') || 'http://localhost:11434/api/generate';
+    const ollamaModel = config.get<string>('ollamaModel') || 'llama2';
+
+    const response = await axios.post(
+      ollamaEndpoint,
+      {
+        model: ollamaModel,
+        prompt: prompt,
+        stream: false
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+
+    // Extract the improved code from the response
+    if (response.data && response.data.response) {
+      const improvedCode = extractCodeFromResponse(response.data.response);
+      console.log('Improved code:', improvedCode);
+
+    
+      
+      vscode.window.showInformationMessage('Code successfully returned from Ollama');
+      return improvedCode
+    } else {
+      vscode.window.showErrorMessage('Invalid response from Ollama');
+      return ""
+    }
+  } catch (error) {
+    let errorMessage = 'Failed to rewrite code';
+    
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        errorMessage = `Ollama API error: ${error.response.status} ${error.response.statusText}`;
+      } else if (error.request) {
+        errorMessage = 'Could not connect to Ollama. Make sure Ollama is running.';
+      }
+    }
+    
+    vscode.window.showErrorMessage(errorMessage);
+    console.error('Code rewriting error:', error);
+    return ""
+  }
+  
+}
 async function handleOllamaRequest(prompt: string) {
   vscode.window.showInformationMessage('Ollama request triggered');
   console.log('Ollama request triggered...');
