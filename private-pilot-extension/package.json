@@ -28,6 +28,10 @@
         "title": "🧠 Private Pilot: Improve this code"
       },
       {
+        "command": "private-pilot.contextualimprove",
+        "title": "🚀 Private Pilot: improve within the context of the file"
+      },
+      {
         "command": "private-pilot.explain",
         "title": "Private Pilot: Explain"
       },
@@ -78,43 +82,48 @@
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.explain",
+          "command": "private-pilot.contextualimprove",
           "group": "1_code_actions@2",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.fixTypos",
+          "command": "private-pilot.explain",
           "group": "1_code_actions@3",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.writeComments",
+          "command": "private-pilot.fixTypos",
           "group": "1_code_actions@4",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.automatedReview",
+          "command": "private-pilot.writeComments",
           "group": "1_code_actions@5",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.rewriteCode",
+          "command": "private-pilot.automatedReview",
           "group": "1_code_actions@6",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.autoComment",
+          "command": "private-pilot.rewriteCode",
           "group": "1_code_actions@7",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.createCode",
+          "command": "private-pilot.autoComment",
           "group": "1_code_actions@8",
           "when": "editorHasSelection"
         },
         {
-          "command": "private-pilot.askQuestion",
+          "command": "private-pilot.createCode",
           "group": "1_code_actions@9",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "private-pilot.askQuestion",
+          "group": "1_code_actions@10",
           "when": "editorHasSelection"
         },
         {

@@ -16,6 +16,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Register commands for code selection actions
   const improveCodeCommand = vscode.commands.registerCommand('private-pilot.improve', handleImproveCode);
+  const contextualimproveCodeCommand = vscode.commands.registerCommand('private-pilot.contextualimprove', handleContextualImprove);
+
   const explainCodeCommand = vscode.commands.registerCommand('private-pilot.explain', handleExplainCode);
   const fixTyposCommand = vscode.commands.registerCommand('private-pilot.fixTypos', handleFixTypos);
   const writeCommentsCommand = vscode.commands.registerCommand('private-pilot.writeComments', handleWriteComments);
@@ -33,6 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Add all commands to the extension context
   context.subscriptions.push(
     improveCodeCommand,
+    contextualimproveCodeCommand,
     explainCodeCommand,
     fixTyposCommand,
     writeCommentsCommand,
@@ -123,7 +126,62 @@ async function handleImproveCode() {
       insertPos = insertPos.translate(0, 1);
     }
   }
-  vscode.window.showInformationMessage('Selected text replaced with "Hello world".');
+  vscode.window.showInformationMessage('Selected text replaced the improved code.');
+
+
+}
+
+
+/**
+ * Handler for the "Improve" command
+ */
+async function handleContextualImprove() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showInformationMessage('No active editor found.');
+    return;
+  }
+
+  const selection = editor.selection;
+  if (selection.isEmpty) {
+    vscode.window.showInformationMessage('No code selected to improve.');
+    return;
+  }
+  const selectedText = editor.document.getText(selection);
+
+  // This would call the LLM backend in a real implementation
+  vscode.window.showInformationMessage('Improve code functionality triggered'+`:\n${selectedText}`);
+
+
+  const fulltext = editor.document.getText();
+
+  const preprompt = improveCode + selectedText +"\n\n the full context of the file that contains the codeblock is below \n\n\n"+fulltext ;
+  // Simulate deleting and then typing 
+  const textToType = await getOllamaText(preprompt);
+
+  // Delete the selected text
+  await editor.edit(editBuilder => {
+    editBuilder.delete(selection);
+  });
+
+  // Type out the new text character by character at the selection start
+  let insertPos = selection.start;
+  for (let i = 0; i < textToType.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, DELAY)); // Delay for typing effect
+    await editor.edit(editBuilder => {
+      editBuilder.insert(insertPos, textToType[i]);
+    });
+    
+    // Handle position differently for newline characters
+    if (textToType[i] === '\n') {
+      // Move to beginning of next line
+      insertPos = new vscode.Position(insertPos.line + 1, 0);
+    } else {
+      // Move right by one character on same line
+      insertPos = insertPos.translate(0, 1);
+    }
+  }
+  vscode.window.showInformationMessage('Selected text replaced with the contextually aware LLM .');
 
 
 
