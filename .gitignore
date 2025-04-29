@@ -136,4 +136,4 @@ dist
 .pnp.*
 
 # compiled VScode extensions 
-.vsix
+*.vsix
