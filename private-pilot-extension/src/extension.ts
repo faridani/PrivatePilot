@@ -105,7 +105,7 @@ async function handleImproveCode() {
   const textToType = await getOllamaText(preprompt);
 
   // Delete the selected text
-  await editor.edit(editBuilder => {
+  await editor.edit((editBuilder: vscode.TextEditorEdit) => {
     editBuilder.delete(selection);
   });
 
@@ -113,7 +113,7 @@ async function handleImproveCode() {
   let insertPos = selection.start;
   for (let i = 0; i < textToType.length; i++) {
     await new Promise(resolve => setTimeout(resolve, DELAY)); // Delay for typing effect
-    await editor.edit(editBuilder => {
+    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
       editBuilder.insert(insertPos, textToType[i]);
     });
     
@@ -160,7 +160,7 @@ async function handleContextualImprove() {
   const textToType = await getOllamaText(preprompt);
 
   // Delete the selected text
-  await editor.edit(editBuilder => {
+  await editor.edit((editBuilder: vscode.TextEditorEdit) => {
     editBuilder.delete(selection);
   });
 
@@ -168,7 +168,7 @@ async function handleContextualImprove() {
   let insertPos = selection.start;
   for (let i = 0; i < textToType.length; i++) {
     await new Promise(resolve => setTimeout(resolve, DELAY)); // Delay for typing effect
-    await editor.edit(editBuilder => {
+    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
       editBuilder.insert(insertPos, textToType[i]);
     });
     
@@ -293,7 +293,7 @@ async function handleAskQuestion() {
   });
 }
 
-async function getOllamaText(prompt:string) {
+async function getOllamaText(prompt: string): Promise<string> {
   vscode.window.showInformationMessage('Ollama request triggered');
   console.log('getOllamaText request triggered...');
   
@@ -347,7 +347,7 @@ async function getOllamaText(prompt:string) {
   }
   
 }
-async function handleOllamaRequest(prompt: string) {
+async function handleOllamaRequest(prompt?: string) {
   vscode.window.showInformationMessage('Ollama request triggered');
   console.log('Ollama request triggered...');
   try {
@@ -376,7 +376,7 @@ async function handleOllamaRequest(prompt: string) {
         title: 'Rewriting code...',
         cancellable: false
       },
-      async (progress) => {
+      async (progress: vscode.Progress<{ message?: string; increment?: number }>) => {
         progress.report({ increment: 0 });
 
         try {
@@ -407,7 +407,7 @@ async function handleOllamaRequest(prompt: string) {
             console.log('Improved code:', improvedCode);
 
             // Replace the selected text with the improved code
-            await editor.edit(editBuilder => {
+            await editor.edit((editBuilder: vscode.TextEditorEdit) => {
               editBuilder.replace(selection, improvedCode);
             });
             
