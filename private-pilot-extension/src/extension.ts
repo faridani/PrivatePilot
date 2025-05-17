@@ -64,6 +64,11 @@ async function handleImproveCode() {
   // Simulate deleting and then typing
   const textToType = await getOllamaText(preprompt);
 
+  if (textToType === null) {
+    vscode.window.showErrorMessage('Failed to get improved code from Ollama');
+    return;
+  }
+
   // Delete the selected text
   await editor.edit((editBuilder: vscode.TextEditorEdit) => {
     editBuilder.delete(selection);
@@ -114,6 +119,11 @@ async function handleContextualImprove() {
   const preprompt = `${improveCode}${selectedText}\n\nthe full context of the file that contains the codeblock is below\n\n${fulltext}`;
   // Simulate deleting and then typing
   const textToType = await getOllamaText(preprompt);
+
+  if (textToType === null) {
+    vscode.window.showErrorMessage('Failed to get improved code from Ollama');
+    return;
+  }
 
   // Delete the selected text
   await editor.edit((editBuilder: vscode.TextEditorEdit) => {
@@ -250,7 +260,7 @@ async function handleAskQuestion() {
     });
 }
 
-async function getOllamaText(prompt: string): Promise<string> {
+async function getOllamaText(prompt: string): Promise<string | null> {
   vscode.window.showInformationMessage('Ollama request triggered');
   console.log('getOllamaText request triggered...');
 
@@ -297,7 +307,7 @@ async function getOllamaText(prompt: string): Promise<string> {
 
     vscode.window.showErrorMessage(errorMessage);
     console.error('Code rewriting error:', error);
-    return '';
+    return null;
   }
 }
 async function handleOllamaRequest(prompt?: string) {
@@ -352,6 +362,8 @@ async function handleOllamaRequest(prompt?: string) {
           );
 
           progress.report({ increment: 100 });
+
+          console.log('API response:', response);
 
           // Extract the improved code from the response
           if (response.data && response.data.response) {
