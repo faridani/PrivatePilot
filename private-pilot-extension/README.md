@@ -1,7 +1,7 @@
 # Private Pilot VSCode Extension
 
 ## Overview
-**Private Pilot** is a powerful VSCode extension designed to enhance developer productivity by integrating AI-driven assistance directly within the Visual Studio Code IDE. Leveraging the Ollama AI backend, Private Pilot provides real-time code suggestions, automated bug fixes, intelligent code commenting, and an interactive chat interface to streamline your coding workflow.
+**Private Pilot** is a powerful VSCode extension designed to enhance developer productivity by integrating AI-driven assistance directly within the Visual Studio Code IDE. It can communicate with multiple large language model providers—including Ollama, OpenAI, Grok, and Claude—to deliver real-time code suggestions, automated bug fixes, intelligent code commenting, and an interactive chat interface to streamline your coding workflow.
 
 **Version:** 0.3.0
 
@@ -35,7 +35,7 @@ Alternatively, install via the [VSCode Marketplace](https://marketplace.visualst
    - Generate comments or documentation by selecting code and using context-aware prompts.
 
 ## Configuration
-- **Ollama Backend**: Ensure the Ollama backend is running and accessible. Configure the endpoint in the extension settings if needed.
+- **Model Provider**: Choose between `ollama`, `openai`, `grok`, or `claude` in the extension settings. Each provider has its own endpoint and API key fields.
 - **Verbosity Levels**: Customize the level of detail for AI-generated comments in the extension settings.
 - **Project Management Tools**: Link your Jira, GitHub, or Trello accounts in the settings for seamless integration.
 
@@ -43,7 +43,7 @@ Alternatively, install via the [VSCode Marketplace](https://marketplace.visualst
 - **VSCode**: Version 1.60.0 or later
 - **Node.js**: Required for development and building the extension
 - **TypeScript**: Used for development
-- **Ollama Backend**: Required for AI functionality
+- **LLM Backend**: Ensure your chosen provider (Ollama, OpenAI, Grok, or Claude) is reachable. Some providers require an API key.
 
 ## Development
 To contribute or customize the extension:
