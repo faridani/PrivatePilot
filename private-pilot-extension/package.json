@@ -153,6 +153,12 @@
     "configuration": {
       "title": "Code Rewriter",
       "properties": {
+        "codeRewriter.provider": {
+          "type": "string",
+          "enum": ["ollama", "openai", "grok", "claude"],
+          "default": "ollama",
+          "description": "LLM provider to use"
+        },
         "codeRewriter.ollamaEndpoint": {
           "type": "string",
           "default": "http://localhost:11434/api/generate",
@@ -162,6 +168,51 @@
           "type": "string",
           "default": "llama2",
           "description": "Ollama model to use for code improvement"
+        },
+        "codeRewriter.openaiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for OpenAI"
+        },
+        "codeRewriter.openaiModel": {
+          "type": "string",
+          "default": "gpt-3.5-turbo",
+          "description": "OpenAI model"
+        },
+        "codeRewriter.openaiEndpoint": {
+          "type": "string",
+          "default": "https://api.openai.com/v1/chat/completions",
+          "description": "OpenAI endpoint"
+        },
+        "codeRewriter.grokEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Endpoint for Grok API"
+        },
+        "codeRewriter.grokApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for Grok"
+        },
+        "codeRewriter.grokModel": {
+          "type": "string",
+          "default": "latest",
+          "description": "Grok model"
+        },
+        "codeRewriter.claudeEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Endpoint for Claude API"
+        },
+        "codeRewriter.claudeApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for Claude"
+        },
+        "codeRewriter.claudeModel": {
+          "type": "string",
+          "default": "claude-3-opus-20240229",
+          "description": "Claude model"
         }
       }
     }

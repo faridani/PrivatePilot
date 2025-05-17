@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { improveCode } from './prompts';
+import { getModelProvider } from './modelProviders';
 import {
   typingDelay,
   getSelectedText,
@@ -31,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     'private-pilot.autoComment': handleAutoComment,
     'private-pilot.createCode': handleCreateCode,
     'private-pilot.askQuestion': handleAskQuestion,
-    'private-pilot.rewriteCode': handleOllamaRequest,
+    'private-pilot.rewriteCode': handleModelRequest,
   };
 
   // Register all commands and push to subscriptions
@@ -62,7 +63,7 @@ async function handleImproveCode() {
 
   const preprompt = improveCode + selectedText;
   // Simulate deleting and then typing
-  const textToType = await getOllamaText(preprompt);
+  const textToType = await getLLMText(preprompt);
 
   if (textToType === null) {
     vscode.window.showErrorMessage('Failed to get improved code from Ollama');
@@ -118,7 +119,7 @@ async function handleContextualImprove() {
 
   const preprompt = `${improveCode}${selectedText}\n\nthe full context of the file that contains the codeblock is below\n\n${fulltext}`;
   // Simulate deleting and then typing
-  const textToType = await getOllamaText(preprompt);
+  const textToType = await getLLMText(preprompt);
 
   if (textToType === null) {
     vscode.window.showErrorMessage('Failed to get improved code from Ollama');
@@ -260,48 +261,22 @@ async function handleAskQuestion() {
     });
 }
 
-async function getOllamaText(prompt: string): Promise<string | null> {
-  vscode.window.showInformationMessage('Ollama request triggered');
-  console.log('getOllamaText request triggered...');
+async function getLLMText(prompt: string): Promise<string | null> {
+  console.log('getLLMText request triggered...');
 
   try {
-    const config = vscode.workspace.getConfiguration('codeRewriter');
-    const ollamaEndpoint = config.get<string>('ollamaEndpoint') || getFallbackURL('api/generate');
-    const ollamaModel = config.get<string>('ollamaModel') || FALLBACK_MODEL;
-
-    const response = await axios.post(
-      ollamaEndpoint,
-      {
-        model: ollamaModel,
-        prompt: prompt,
-        stream: false,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-
-    // Extract the improved code from the response
-    if (response.data && response.data.response) {
-      const improvedCode = extractCodeFromResponse(response.data.response);
-      console.log('Improved code:', improvedCode);
-
-      vscode.window.showInformationMessage('Code successfully returned from Ollama');
-      return improvedCode;
-    } else {
-      vscode.window.showErrorMessage('Invalid response from Ollama');
-      return '';
-    }
+    const provider = getModelProvider();
+    const result = await provider.generate(prompt);
+    vscode.window.showInformationMessage('Code successfully returned from model');
+    return result;
   } catch (error) {
     let errorMessage = 'Failed to rewrite code';
 
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        errorMessage = `Ollama API error: ${error.response.status} ${error.response.statusText}`;
+        errorMessage = `Model API error: ${error.response.status} ${error.response.statusText}`;
       } else if (error.request) {
-        errorMessage = 'Could not connect to Ollama. Make sure Ollama is running.';
+        errorMessage = 'Could not connect to model backend.';
       }
     }
 
@@ -310,9 +285,9 @@ async function getOllamaText(prompt: string): Promise<string | null> {
     return null;
   }
 }
-async function handleOllamaRequest(prompt?: string) {
-  vscode.window.showInformationMessage('Ollama request triggered');
-  console.log('Ollama request triggered...');
+async function handleModelRequest(prompt?: string) {
+  vscode.window.showInformationMessage('LLM request triggered');
+  console.log('LLM request triggered...');
   try {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -343,51 +318,29 @@ async function handleOllamaRequest(prompt?: string) {
         progress.report({ increment: 0 });
 
         try {
-          const config = vscode.workspace.getConfiguration('codeRewriter');
-          const ollamaEndpoint = config.get<string>('ollamaEndpoint') || getFallbackURL('api/generate');
-          const ollamaModel = config.get<string>('ollamaModel') || FALLBACK_MODEL;
-
-          const response = await axios.post(
-            ollamaEndpoint,
-            {
-              model: ollamaModel,
-              prompt: prompt || `Improve this code:\n\n${selectedText}\n\nImproved code:`,
-              stream: false,
-            },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            },
+          const provider = getModelProvider();
+          const improvedCode = await provider.generate(
+            prompt || `Improve this code:\n\n${selectedText}\n\nImproved code:`,
           );
 
           progress.report({ increment: 100 });
 
-          console.log('API response:', response);
+          console.log('Improved code:', improvedCode);
 
-          // Extract the improved code from the response
-          if (response.data && response.data.response) {
-            const improvedCode = extractCodeFromResponse(response.data.response);
-            console.log('Selected text:', selectedText);
-            console.log('Improved code:', improvedCode);
+          // Replace the selected text with the improved code
+          await editor.edit((editBuilder: vscode.TextEditorEdit) => {
+            editBuilder.replace(selection, improvedCode);
+          });
 
-            // Replace the selected text with the improved code
-            await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-              editBuilder.replace(selection, improvedCode);
-            });
-
-            vscode.window.showInformationMessage('Code successfully rewritten');
-          } else {
-            vscode.window.showErrorMessage('Invalid response from Ollama');
-          }
+          vscode.window.showInformationMessage('Code successfully rewritten');
         } catch (error) {
           let errorMessage = 'Failed to rewrite code';
 
           if (axios.isAxiosError(error)) {
             if (error.response) {
-              errorMessage = `Ollama API error: ${error.response.status} ${error.response.statusText}`;
+              errorMessage = `Model API error: ${error.response.status} ${error.response.statusText}`;
             } else if (error.request) {
-              errorMessage = 'Could not connect to Ollama. Make sure Ollama is running.';
+              errorMessage = 'Could not connect to model backend.';
             }
           }
 
