@@ -30,43 +30,43 @@
       },
       {
         "command": "private-pilot.contextualimprove",
-        "title": "🚀 Private Pilot: improve within the context of the file"
+        "title": "🚀 Private Pilot: Improve within the context of the file"
       },
       {
         "command": "private-pilot.explain",
-        "title": "Private Pilot: Explain"
+        "title": "💡 Private Pilot: Explain"
       },
       {
         "command": "private-pilot.explain",
-        "title": "Private Pilot: Explain this code"
+        "title": "💡 Private Pilot: Explain this code"
       },
       {
         "command": "private-pilot.fixTypos",
-        "title": "Private Pilot: Fix typos and grammar"
+        "title": "📝 Private Pilot: Fix typos and grammar"
       },
       {
         "command": "private-pilot.writeComments",
-        "title": "Private Pilot: Write Comments"
+        "title": "💬 Private Pilot: Write Comments"
       },
       {
         "command": "private-pilot.automatedReview",
-        "title": "Private Pilot: Automated Review"
+        "title": "🔍 Private Pilot: Automated Review"
       },
       {
         "command": "private-pilot.autoComment",
-        "title": "Private Pilot: Auto Comment"
+        "title": "✍️ Private Pilot: Auto Comment"
       },
       {
         "command": "private-pilot.createCode",
-        "title": "Private Pilot: Create Code"
+        "title": "🛠️ Private Pilot: Create Code"
       },
       {
         "command": "private-pilot.askQuestion",
-        "title": "Private Pilot: Ask a question"
+        "title": "❓ Private Pilot: Ask a question"
       },
       {
         "command": "private-pilot.rewriteCode",
-        "title": ">>>Private Pilot: rewrite with Ollama"
+        "title": "🔄 Private Pilot: Rewrite with Ollama"
       }
     ],
     "menus": {
