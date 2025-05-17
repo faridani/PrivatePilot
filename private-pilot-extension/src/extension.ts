@@ -2,8 +2,14 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { improveCode } from './prompts';
-
-const DELAY = 5; // Delay in milliseconds for typing effect
+import {
+  typingDelay,
+  getSelectedText,
+  getCursorPosition,
+  extractCodeFromResponse,
+  getFallbackURL,
+  FALLBACK_MODEL,
+} from './common';
 
 /**
  * This method is called when the extension is activated
@@ -14,68 +20,24 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('Code Rewriter extension is now active');
   vscode.window.showInformationMessage('Code Rewriter extension is now active!');
 
-  // Register commands for code selection actions
-  const improveCodeCommand = vscode.commands.registerCommand('private-pilot.improve', handleImproveCode);
-  const contextualimproveCodeCommand = vscode.commands.registerCommand('private-pilot.contextualimprove', handleContextualImprove);
+  // Map command keys to their handler functions
+  const commandHandlers: { [key: string]: (...args: any[]) => any } = {
+    'private-pilot.improve': handleImproveCode,
+    'private-pilot.contextualimprove': handleContextualImprove,
+    'private-pilot.explain': handleExplainCode,
+    'private-pilot.fixTypos': handleFixTypos,
+    'private-pilot.writeComments': handleWriteComments,
+    'private-pilot.automatedReview': handleAutomatedReview,
+    'private-pilot.autoComment': handleAutoComment,
+    'private-pilot.createCode': handleCreateCode,
+    'private-pilot.askQuestion': handleAskQuestion,
+    'private-pilot.rewriteCode': handleOllamaRequest,
+  };
 
-  const explainCodeCommand = vscode.commands.registerCommand('private-pilot.explain', handleExplainCode);
-  const fixTyposCommand = vscode.commands.registerCommand('private-pilot.fixTypos', handleFixTypos);
-  const writeCommentsCommand = vscode.commands.registerCommand('private-pilot.writeComments', handleWriteComments);
-  const automatedReviewCommand = vscode.commands.registerCommand('private-pilot.automatedReview', handleAutomatedReview);
-
-  // Register commands for empty line actions
-  const autoCommentCommand = vscode.commands.registerCommand('private-pilot.autoComment', handleAutoComment);
-  const createCodeCommand = vscode.commands.registerCommand('private-pilot.createCode', handleCreateCode);
-  const askQuestionCommand = vscode.commands.registerCommand('private-pilot.askQuestion', handleAskQuestion);
-
-  // Ollama API endpoint and model configuration
-  const rewriteCodeCommand = vscode.commands.registerCommand('private-pilot.rewriteCode', handleOllamaRequest);
-
-
-  // Add all commands to the extension context
-  context.subscriptions.push(
-    improveCodeCommand,
-    contextualimproveCodeCommand,
-    explainCodeCommand,
-    fixTyposCommand,
-    writeCommentsCommand,
-    automatedReviewCommand,
-    autoCommentCommand,
-    createCodeCommand,
-    askQuestionCommand,
-    rewriteCodeCommand
-  );
-}
-
-/**
- * Gets the selected text from the active editor
- * @returns The selected text or null if no text is selected
- */
-function getSelectedText(): string | null {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return null;
+  // Register all commands and push to subscriptions
+  for (const [command, handler] of Object.entries(commandHandlers)) {
+    context.subscriptions.push(vscode.commands.registerCommand(command, handler));
   }
-
-  const selection = editor.selection;
-  if (selection.isEmpty) {
-    return null;
-  }
-
-  return editor.document.getText(selection);
-}
-
-/**
- * Gets the current cursor position from the active editor
- * @returns The cursor position or null if no editor is active
- */
-function getCursorPosition(): vscode.Position | null {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return null;
-  }
-
-  return editor.selection.active;
 }
 
 /**
@@ -96,12 +58,10 @@ async function handleImproveCode() {
   const selectedText = editor.document.getText(selection);
 
   // This would call the LLM backend in a real implementation
-  vscode.window.showInformationMessage('Improve code functionality triggered'+`:\n${selectedText}`);
-
-
+  vscode.window.showInformationMessage(`Improve code functionality triggered:\n${selectedText}`);
 
   const preprompt = improveCode + selectedText;
-  // Simulate deleting and then typing 
+  // Simulate deleting and then typing
   const textToType = await getOllamaText(preprompt);
 
   // Delete the selected text
@@ -112,11 +72,11 @@ async function handleImproveCode() {
   // Type out the new text character by character at the selection start
   let insertPos = selection.start;
   for (let i = 0; i < textToType.length; i++) {
-    await new Promise(resolve => setTimeout(resolve, DELAY)); // Delay for typing effect
+    await typingDelay(); // Delay for typing effect
     await editor.edit((editBuilder: vscode.TextEditorEdit) => {
       editBuilder.insert(insertPos, textToType[i]);
     });
-    
+
     // Handle position differently for newline characters
     if (textToType[i] === '\n') {
       // Move to beginning of next line
@@ -127,10 +87,7 @@ async function handleImproveCode() {
     }
   }
   vscode.window.showInformationMessage('Selected text replaced the improved code.');
-
-
 }
-
 
 /**
  * Handler for the "Improve" command
@@ -150,13 +107,12 @@ async function handleContextualImprove() {
   const selectedText = editor.document.getText(selection);
 
   // This would call the LLM backend in a real implementation
-  vscode.window.showInformationMessage('Improve code functionality triggered'+`:\n${selectedText}`);
-
+  vscode.window.showInformationMessage(`Contextual improve code functionality triggered:\n${selectedText}`);
 
   const fulltext = editor.document.getText();
 
-  const preprompt = improveCode + selectedText +"\n\n the full context of the file that contains the codeblock is below \n\n\n"+fulltext ;
-  // Simulate deleting and then typing 
+  const preprompt = `${improveCode}${selectedText}\n\nthe full context of the file that contains the codeblock is below\n\n${fulltext}`;
+  // Simulate deleting and then typing
   const textToType = await getOllamaText(preprompt);
 
   // Delete the selected text
@@ -167,11 +123,11 @@ async function handleContextualImprove() {
   // Type out the new text character by character at the selection start
   let insertPos = selection.start;
   for (let i = 0; i < textToType.length; i++) {
-    await new Promise(resolve => setTimeout(resolve, DELAY)); // Delay for typing effect
+    await typingDelay(); // Delay for typing effect
     await editor.edit((editBuilder: vscode.TextEditorEdit) => {
       editBuilder.insert(insertPos, textToType[i]);
     });
-    
+
     // Handle position differently for newline characters
     if (textToType[i] === '\n') {
       // Move to beginning of next line
@@ -182,9 +138,6 @@ async function handleContextualImprove() {
     }
   }
   vscode.window.showInformationMessage('Selected text replaced with the contextually aware LLM .');
-
-
-
 }
 
 /**
@@ -267,7 +220,7 @@ async function handleCreateCode() {
     return;
   }
 
-  // This would call the LLM backend in a real implementation  
+  // This would call the LLM backend in a real implementation
   vscode.window.showInformationMessage('Create code functionality triggered');
 }
 
@@ -282,57 +235,58 @@ async function handleAskQuestion() {
   }
 
   // This would prompt the user for a question and then call the LLM backend
-  vscode.window.showInputBox({
-    prompt: 'What would you like to ask?',
-    placeHolder: 'Enter your question here...'
-  }).then(question => {
-    if (question) {
-      // This would call the LLM backend in a real implementation
-      vscode.window.showInformationMessage(`Ask question functionality triggered: ${question}`);
-    }
-  });
+  vscode.window
+    .showInputBox({
+      prompt: 'What would you like to ask?',
+      placeHolder: 'Enter your question here...',
+    })
+    .then((question: string | undefined) => {
+      if (question && question.trim() !== '') {
+        // This would call the LLM backend in a real implementation
+        vscode.window.showInformationMessage(`Ask question functionality triggered: ${question}`);
+      } else {
+        vscode.window.showInformationMessage('No question provided.');
+      }
+    });
 }
 
 async function getOllamaText(prompt: string): Promise<string> {
   vscode.window.showInformationMessage('Ollama request triggered');
   console.log('getOllamaText request triggered...');
-  
+
   try {
     const config = vscode.workspace.getConfiguration('codeRewriter');
-    const ollamaEndpoint = config.get<string>('ollamaEndpoint') || 'http://localhost:11434/api/generate';
-    const ollamaModel = config.get<string>('ollamaModel') || 'llama2';
+    const ollamaEndpoint = config.get<string>('ollamaEndpoint') || getFallbackURL('api/generate');
+    const ollamaModel = config.get<string>('ollamaModel') || FALLBACK_MODEL;
 
     const response = await axios.post(
       ollamaEndpoint,
       {
         model: ollamaModel,
         prompt: prompt,
-        stream: false
+        stream: false,
       },
       {
         headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+          'Content-Type': 'application/json',
+        },
+      },
     );
-
 
     // Extract the improved code from the response
     if (response.data && response.data.response) {
       const improvedCode = extractCodeFromResponse(response.data.response);
       console.log('Improved code:', improvedCode);
 
-    
-      
       vscode.window.showInformationMessage('Code successfully returned from Ollama');
-      return improvedCode
+      return improvedCode;
     } else {
       vscode.window.showErrorMessage('Invalid response from Ollama');
-      return ""
+      return '';
     }
   } catch (error) {
     let errorMessage = 'Failed to rewrite code';
-    
+
     if (axios.isAxiosError(error)) {
       if (error.response) {
         errorMessage = `Ollama API error: ${error.response.status} ${error.response.statusText}`;
@@ -340,12 +294,11 @@ async function getOllamaText(prompt: string): Promise<string> {
         errorMessage = 'Could not connect to Ollama. Make sure Ollama is running.';
       }
     }
-    
+
     vscode.window.showErrorMessage(errorMessage);
     console.error('Code rewriting error:', error);
-    return ""
+    return '';
   }
-  
 }
 async function handleOllamaRequest(prompt?: string) {
   vscode.window.showInformationMessage('Ollama request triggered');
@@ -374,28 +327,28 @@ async function handleOllamaRequest(prompt?: string) {
       {
         location: vscode.ProgressLocation.Notification,
         title: 'Rewriting code...',
-        cancellable: false
+        cancellable: false,
       },
       async (progress: vscode.Progress<{ message?: string; increment?: number }>) => {
         progress.report({ increment: 0 });
 
         try {
           const config = vscode.workspace.getConfiguration('codeRewriter');
-          const ollamaEndpoint = config.get<string>('ollamaEndpoint') || 'http://localhost:11434/api/generate';
-          const ollamaModel = config.get<string>('ollamaModel') || 'llama2';
+          const ollamaEndpoint = config.get<string>('ollamaEndpoint') || getFallbackURL('api/generate');
+          const ollamaModel = config.get<string>('ollamaModel') || FALLBACK_MODEL;
 
           const response = await axios.post(
             ollamaEndpoint,
             {
               model: ollamaModel,
               prompt: prompt || `Improve this code:\n\n${selectedText}\n\nImproved code:`,
-              stream: false
+              stream: false,
             },
             {
               headers: {
-                'Content-Type': 'application/json'
-              }
-            }
+                'Content-Type': 'application/json',
+              },
+            },
           );
 
           progress.report({ increment: 100 });
@@ -410,14 +363,14 @@ async function handleOllamaRequest(prompt?: string) {
             await editor.edit((editBuilder: vscode.TextEditorEdit) => {
               editBuilder.replace(selection, improvedCode);
             });
-            
+
             vscode.window.showInformationMessage('Code successfully rewritten');
           } else {
             vscode.window.showErrorMessage('Invalid response from Ollama');
           }
         } catch (error) {
           let errorMessage = 'Failed to rewrite code';
-          
+
           if (axios.isAxiosError(error)) {
             if (error.response) {
               errorMessage = `Ollama API error: ${error.response.status} ${error.response.statusText}`;
@@ -425,11 +378,11 @@ async function handleOllamaRequest(prompt?: string) {
               errorMessage = 'Could not connect to Ollama. Make sure Ollama is running.';
             }
           }
-          
+
           vscode.window.showErrorMessage(errorMessage);
           console.error('Code rewriting error:', error);
         }
-      }
+      },
     );
   } catch (error) {
     vscode.window.showErrorMessage(`Unexpected error: ${error}`);
@@ -437,21 +390,5 @@ async function handleOllamaRequest(prompt?: string) {
   }
 }
 
-
-function extractCodeFromResponse(response: string): string {
-  // Handle potential code block formatting in the response
-  // Some models might return code wrapped in markdown code blocks
-  const codeBlockMatch = response.match(/```(?:\w+)?\n([\s\S]+?)\n```/);
-  if (codeBlockMatch) {
-    return codeBlockMatch[1].trim();
-  }
-  
-  // If no code block found, use the whole response
-  // This might need additional processing depending on your model's output format
-  return response.trim();
-}
-
 // This method is called when your extension is deactivated
 export function deactivate() {}
-
-

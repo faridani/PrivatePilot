@@ -11,7 +11,8 @@ PrivatePilot/
 ├── private-pilot-extension/
 │   ├── src/
 │   │   ├── extension.ts  – Main extension code
-│   │   └── prompts.ts    – Prompt strings for Ollama
+│   │   ├── prompts.ts    – Prompt strings for Ollama
+│   │   └── common.ts     – Common functions and constants shared across the extension
 │   ├── resources/        – Extension icons
 │   ├── package.json      – Extension metadata and commands
 │   └── tsconfig.json     – TypeScript configuration
