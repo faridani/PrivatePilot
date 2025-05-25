@@ -1,4 +1,4 @@
-# PrivatePilot
+# PrivatePilot Code
 IDE extension for private coding 
 
 **Private Pilot** is a powerful VSCode extension designed to enhance developer productivity by integrating AI-driven assistance directly within the Visual Studio Code IDE. Leveraging the Ollama AI backend, Private Pilot provides real-time code suggestions, automated bug fixes, intelligent code commenting, and an interactive chat interface to streamline your coding workflow.
